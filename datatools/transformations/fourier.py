@@ -18,7 +18,8 @@ class Fourier(Transform):
         self.cellsize = cellsize
 
         if area is None:
-            area = cellsize[0] * S.shape[0] * cellsize[1] * S.shape[1]
+            # area = cellsize[0] * S.shape[0] * cellsize[1] * S.shape[1]
+            area = S.shape[0] * S.shape[1]
         self.area = area
 
     @property
@@ -80,8 +81,8 @@ class Fourier(Transform):
         if isinstance(Z, np.ma.MaskedArray):
             raise TypeError('input for fourier transform may not be of type MaskedArray')
 
-        # length x * length y
-        area = cellsize[0] * Z.shape[0] * cellsize[1] * Z.shape[1]
+        # # length x * length y
+        # area = cellsize[0] * Z.shape[0] * cellsize[1] * Z.shape[1]
 
         # create wave number vectors
         kx = np.linspace(-.5, .5, Z.shape[1])/cellsize[1]
@@ -91,7 +92,7 @@ class Fourier(Transform):
         S = np.fft.fftshift(np.fft.fft2(Z))
 
         # return a fourier object
-        return cls(kx, ky, S, cellsize=cellsize, area=area)
+        return cls(kx, ky, S, cellsize=cellsize)
 
     def reverse(self, shape=None, nanmask=None):
         """
