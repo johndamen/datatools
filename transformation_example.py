@@ -30,12 +30,12 @@ fig, axes = plt.subplots(figsize=(12, 12), nrows=2, ncols=2)
 axes[0, 0].pcolormesh(x, y, Z, vmin=-1, vmax=1)
 
 axes[0, 1].pcolormesh(F.kx, F.ky, F.amplitude, cmap='inferno', vmin=0)
-axes[0, 1].set_xlim(-5, 5)
-axes[0, 1].set_ylim(-5, 5)
+axes[0, 1].set_xlim(-10, 10)
+axes[0, 1].set_ylim(-10, 10)
 
 axes[1, 0].pcolormesh(F_filt.kx, F_filt.ky, F_filt.amplitude, cmap='inferno', vmin=0)
-axes[1, 0].set_xlim(-5, 5)
-axes[1, 0].set_ylim(-5, 5)
+axes[1, 0].set_xlim(-10, 10)
+axes[1, 0].set_ylim(-10, 10)
 
 axes[1, 1].pcolormesh(x, y, filtered_Z, vmin=-1, vmax=1)
 
@@ -57,12 +57,35 @@ fig, axes = plt.subplots(figsize=(12, 12), nrows=2, ncols=2)
 axes[0, 0].pcolormesh(x, y, Z, vmin=-1, vmax=1)
 
 axes[0, 1].pcolormesh(F.kx, F.ky, F.amplitude, cmap='inferno', vmin=0)
-axes[0, 1].set_xlim(-5, 5)
-axes[0, 1].set_ylim(-5, 5)
+axes[0, 1].set_xlim(-12, 12)
+axes[0, 1].set_ylim(-12, 12)
 
 axes[1, 0].pcolormesh(F_filt.kx, F_filt.ky, F_filt.amplitude, cmap='inferno', vmin=0)
-axes[1, 0].set_xlim(-5, 5)
-axes[1, 0].set_ylim(-5, 5)
+axes[1, 0].set_xlim(-12, 12)
+axes[1, 0].set_ylim(-12, 12)
+
+axes[1, 1].pcolormesh(x, y, filtered_Z, vmin=-1, vmax=1)
+
+
+
+# make a fourier transform for an area of 100x100 metres
+F = transformations.Fourier.transform(np.linspace(0, 100, x.size), np.linspace(0, 100, y.size), Z, remove_avg=True)
+
+# only keep the small wave (wavelength 10 m)
+F_filt = F.filter(kmin=1./11, kmax=1./9)
+filtered_Z = F_filt.reverse()
+
+
+fig, axes = plt.subplots(figsize=(12, 12), nrows=2, ncols=2)
+axes[0, 0].pcolormesh(x, y, Z, vmin=-1, vmax=1)
+
+axes[0, 1].pcolormesh(F.kx, F.ky, F.amplitude, cmap='inferno', vmin=0)
+axes[0, 1].set_xlim(-.12, .12)
+axes[0, 1].set_ylim(-.12, .12)
+
+axes[1, 0].pcolormesh(F_filt.kx, F_filt.ky, F_filt.amplitude, cmap='inferno', vmin=0)
+axes[1, 0].set_xlim(-.12, .12)
+axes[1, 0].set_ylim(-.12, .12)
 
 axes[1, 1].pcolormesh(x, y, filtered_Z, vmin=-1, vmax=1)
 
