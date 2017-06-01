@@ -82,9 +82,6 @@ class Fourier(Transform):
         if isinstance(Z, np.ma.MaskedArray):
             raise TypeError('input for fourier transform may not be of type MaskedArray')
 
-        # # length x * length y
-        # area = cellsize[0] * Z.shape[0] * cellsize[1] * Z.shape[1]
-
         # create wave number vectors
         kx = 2*np.pi*np.linspace(-.5, .5, Z.shape[1])/cellsize[1]
         ky = 2*np.pi*np.linspace(-.5, .5, Z.shape[0])/cellsize[0]
