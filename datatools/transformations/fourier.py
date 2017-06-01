@@ -8,6 +8,7 @@ __all__ = ['Fourier', 'filter']
 
 
 class Fourier(Transform):
+
     def __init__(self, kx, ky, S, cellsize=25, area=None):
         self.kx = kx
         self.ky = ky
@@ -84,8 +85,8 @@ class Fourier(Transform):
         area = cellsize[0] * Z.shape[0] * cellsize[1] * Z.shape[1]
 
         # create wave number vectors
-        kx = np.linspace(-.5, .5, Z.shape[1])/cellsize[1]
-        ky = np.linspace(-.5, .5, Z.shape[0])/cellsize[0]
+        kx = 2*np.pi*np.linspace(-.5, .5, Z.shape[1])/cellsize[1]
+        ky = 2*np.pi*np.linspace(-.5, .5, Z.shape[0])/cellsize[0]
 
         # spectrum
         S = np.fft.fftshift(np.fft.fft2(Z))
@@ -134,13 +135,27 @@ class Fourier(Transform):
                           cellsize=self.cellsize,
                           area=self.area)
 
-    def filter(self, kmin=0, kmax=np.inf, theta=None, theta_offset=180, dirmode='deg'):
+    def filter(self, kmin=0, kmax=np.inf, theta=None, theta_offset=180, dirmode='deg', spatial_frequencies=True):
+        """
+        Filter the spectrum based on wave number or angle
+        :param kmin: mimumum wave number as spatial or angular (see spatial_frequencies) with default 0
+        :param kmax: maximum wave number as spatial or angular (see spatial_frequencies) with default np.inf
+        :param theta: mean angle of features to keep
+        :param theta_offset: offset from theta to either side
+        :param dirmode: specifies angle definition (deg|rad)
+        :param spatial_frequencies: specifies if wave numbers are spatial (1/L) or angular (2pi/L)
+        :return: new Fourier object with masked frequencies
+        """
+        if spatial_frequencies:
+            kmin = 2 * np.pi * kmin
+            kmax = 2 * np.pi * kmax
+
         mask = (self.K > kmin) & (self.K < kmax)
 
         if theta is not None:
             if dirmode == 'deg':
-                theta = theta*np.pi/180
-                theta_offset = theta_offset*np.pi/180
+                theta = theta * np.pi / 180
+                theta_offset = theta_offset * np.pi / 180
             elif dirmode == 'rad':
                 pass
             else:
@@ -149,11 +164,33 @@ class Fourier(Transform):
             x = np.linspace(-1, 1, self.kx.size)
             y = np.linspace(-1, 1, self.ky.size)
             X, Y = np.meshgrid(x, y)
-            angle_diff = np.absolute((theta - np.arctan2(Y, X) + .5*np.pi) % np.pi - .5*np.pi)
+            angle_diff = np.absolute((theta - np.arctan2(Y, X) + .5 * np.pi) % np.pi - .5 * np.pi)
 
             mask = np.logical_and(mask, angle_diff <= theta_offset)
 
         return self.apply_mask(mask)
+
+    def plot(self, ax, attr='steepness', labelsize=14, zero_lines=True, spatial_frequencies=True, vmin=0, cmap='inferno', **kw):
+        if spatial_frequencies:
+            x = self.kx / 2 * np.pi
+            y = self.ky / 2 * np.pi
+            xlabel = r'$\xi_x$'
+            ylabel = r'$\xi_y$'
+        else:
+            x = self.kx
+            y = self.ky
+            xlabel = r'$k_x$'
+            ylabel = r'$k_y$'
+
+        c = ax.pcolormesh(x, y, getattr(self, attr), cmap=cmap, vmin=vmin, **kw)
+        ax.set_xlabel(xlabel, size=labelsize)
+        ax.set_ylabel(ylabel, size=labelsize)
+        ax.set_aspect('equal')
+
+        if zero_lines:
+            ax.axhline(0, color=(.9, .9, .9), lw=.5)
+            ax.axvline(0, color=(.9, .9, .9), lw=.5)
+        return c
 
     @classmethod
     def prepare(cls, data, taper=True, avg=True):
